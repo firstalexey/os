@@ -21,6 +21,8 @@ lb config \
   --architectures amd64 \
   --linux-flavours amd64 \
   --debian-installer live \
+  --mirror-bootstrap "http://deb.debian.org/debian/" \
+  --mirror-binary "http://deb.debian.org/debian/" \
   --iso-application "ApOS" \
   --iso-volume "ApOS Live" \
   --iso-publisher "ApOS Project" \
