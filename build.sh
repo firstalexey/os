@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 set -x
 
 echo ">>> [1/6] Устанавливаем live-build и зависимости..."
@@ -34,4 +35,4 @@ echo ">>> [5/6] Собираем образ (это займёт от 20 мин�
 sudo lb build 2>&1 | tee build.log
 
 echo ">>> [6/6] Готово!"
-ls -lh *.iso 2>/dev/null || echo "Файл .iso не найден — смотри build.log на предмет ошибок."
+ls -lh *.iso
