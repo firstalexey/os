@@ -23,6 +23,9 @@ lb config \
   --debian-installer live \
   --mirror-bootstrap "http://deb.debian.org/debian/" \
   --mirror-binary "http://deb.debian.org/debian/" \
+  --mirror-chroot "http://deb.debian.org/debian/" \
+  --mirror-security "http://security.debian.org/debian-security" \
+  --mirror-chroot-security "http://security.debian.org/debian-security" \
   --iso-application "ApOS" \
   --iso-volume "ApOS Live" \
   --iso-publisher "ApOS Project" \
