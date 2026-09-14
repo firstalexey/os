@@ -23,7 +23,7 @@ lb config \
   --distribution bookworm \
   --archive-areas "main contrib non-free non-free-firmware" \
   --binary-images iso-hybrid \
-  --architecture amd64 \
+  --architectures amd64 \
   --linux-flavours amd64 \
   --debian-installer live \
   --iso-application "ApOS" \
