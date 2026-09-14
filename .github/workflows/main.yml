@@ -1,28 +1,34 @@
-#!/bin/bash
-set -e
-set -o pipefail
-set -x
+name: Build ApOS ISO
 
-apt update
-apt install -y live-build live-config live-boot debootstrap \
-    syslinux-utils xorriso squashfs-tools
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
-lb clean --purge || true
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-lb config \
-  --distribution bookworm \
-  --archive-areas "main contrib non-free non-free-firmware" \
-  --binary-images iso-hybrid \
-  --architectures amd64 \
-  --linux-flavours amd64 \
-  --debian-installer live \
-  --iso-application "ApOS" \
-  --iso-volume "ApOS Live" \
-  --iso-publisher "ApOS Project" \
-  --bootappend-live "boot=live components username=apos hostname=apos locales=ru_RU.UTF-8 keyboard-layouts=ru"
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android
+          df -h
 
-chmod +x config/hooks/normal/*.hook.chroot 2>/dev/null || true
+      - name: Build ISO inside real Debian bookworm container
+        run: |
+          docker run --rm --privileged \
+            -v ${{ github.workspace }}:/build \
+            -w /build \
+            debian:bookworm \
+            bash build.sh
 
-lb build 2>&1 | tee build.log
-
-ls -lh *.iso
+      - name: Upload ISO as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApOS-iso
+          path: "*.iso"
+          retention-days: 14
