@@ -44,11 +44,9 @@ calamares-settings-debian
 
 # === Основа для Wine (Windows-приложения) ===
 wine
-wine32
 wine64
 winetricks
 playonlinux
-
 # === Функции из Mint, которых не хватало ===
 timeshift
 synaptic
