@@ -1,0 +1,13 @@
+#!/bin/bash
+# ApOS Update Manager — аналог "Диспетчера обновлений" из Mint,
+# но простой: одна кнопка, всё через zenity.
+
+if (zenity --question --title="Обновления ApOS" \
+    --text="Проверить и установить системные обновления?" --width=350); then
+
+    ( pkexec bash -c "apt update && apt -y upgrade" ) | \
+    zenity --progress --pulsate --auto-close --no-cancel \
+        --title="ApOS" --text="Устанавливаю обновления..." --width=350
+
+    zenity --info --title="ApOS" --text="Обновления установлены." --width=300
+fi
