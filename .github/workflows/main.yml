@@ -1,7 +1,5 @@
 name: Build ApOS ISO
 
-# Запускается вручную (кнопка "Run workflow" во вкладке Actions)
-# или автоматически при пуше в ветку main.
 on:
   workflow_dispatch:
   push:
@@ -32,14 +30,9 @@ jobs:
           chmod +x build.sh
           sudo ./build.sh --non-interactive
 
-      - name: Rename artifact
-        run: |
-          mv *.hybrid.iso ApOS.iso || true
-          ls -lh ApOS.iso
-
       - name: Upload ISO as build artifact
         uses: actions/upload-artifact@v4
         with:
           name: ApOS-iso
-          path: ApOS.iso
+          path: "*.iso"
           retention-days: 14
