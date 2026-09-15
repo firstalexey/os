@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Справочник команд ApOS
+Comment=Список полезных команд терминала
+Exec=apos-command-reference
+Icon=utilities-terminal
+Categories=System;Documentation;
+Terminal=false

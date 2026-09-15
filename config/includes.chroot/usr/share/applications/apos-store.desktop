@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Магазин приложений ApOS
+Comment=Установка программ
+Exec=apos-store
+Icon=system-software-install
+Categories=System;PackageManager;
+Terminal=false

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Диспетчер задач ApOS
+Comment=Просмотр и завершение процессов
+Exec=apos-task-manager
+Icon=utilities-system-monitor
+Categories=System;Monitor;
+Terminal=false

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Диспетчер обновлений ApOS
+Comment=Проверить и установить обновления системы
+Exec=apos-update-manager
+Icon=system-software-update
+Categories=System;
+Terminal=false

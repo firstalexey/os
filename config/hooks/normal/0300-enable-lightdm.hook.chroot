@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+# Создаём пользователя apos, если его ещё нет (нужен для автологина)
+if ! id apos >/dev/null 2>&1; then
+    useradd -m -s /bin/bash -G sudo,adm,cdrom,audio,video,plugdev,netdev apos
+    echo "apos:apos" | chpasswd
+fi
+
+systemctl set-default graphical.target
+systemctl enable lightdm
+
+# Фирменная заставка загрузки ApOS
+update-alternatives --install /usr/share/plymouth/themes/default.plymouth \
+    default.plymouth /usr/share/plymouth/themes/apos/apos.plymouth 100 \
+    --slave /usr/share/plymouth/themes/default.grub grub.default \
+    /usr/share/plymouth/themes/apos/apos.plymouth 2>/dev/null || \
+    plymouth-set-default-theme apos || true
+
+update-initramfs -u 2>/dev/null || true
+

@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=ApOS
+Description=ApOS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/apos
+ScriptFile=/usr/share/plymouth/themes/apos/apos.script

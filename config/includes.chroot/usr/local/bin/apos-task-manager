@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""
+ApOS Task Manager — собственный диспетчер задач.
+Список процессов, использование CPU/RAM, кнопка завершения.
+"""
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GLib, Gdk
+import psutil
+
+CSS = b"""
+window { background-color: #11131f; }
+headerbar {
+    background-color: #181a2b;
+    color: #e6e8f5;
+    border-bottom: 1px solid #2a2d45;
+}
+headerbar .title { font-weight: 700; color: #e6e8f5; }
+treeview {
+    background-color: #11131f;
+    color: #d7d9ee;
+    font-size: 13px;
+}
+treeview:selected {
+    background-color: #3552c9;
+    color: #ffffff;
+}
+treeview header button {
+    background-color: #181a2b;
+    color: #9aa0c8;
+    border: none;
+    padding: 6px;
+}
+button.destructive-action {
+    background: linear-gradient(180deg, #e05a6e, #c23a4f);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 16px;
+    border: none;
+}
+button.destructive-action:hover { background: #d64a5f; }
+label.summary { color: #9aa0c8; font-size: 12px; padding: 6px 12px; }
+"""
+
+
+class ApOSTaskManager(Gtk.Window):
+    def __init__(self):
+        super().__init__(title="Диспетчер задач ApOS")
+        self.set_default_size(720, 480)
+        self.set_border_width(0)
+
+        header = Gtk.HeaderBar(title="Диспетчер задач ApOS")
+        header.set_show_close_button(True)
+        self.set_titlebar(header)
+
+        refresh_btn = Gtk.Button()
+        refresh_icon = Gtk.Image.new_from_icon_name("view-refresh-symbolic", Gtk.IconSize.BUTTON)
+        refresh_btn.add(refresh_icon)
+        refresh_btn.connect("clicked", lambda w: self.refresh())
+        header.pack_start(refresh_btn)
+
+        self.kill_btn = Gtk.Button(label="Завершить процесс")
+        self.kill_btn.get_style_context().add_class("destructive-action")
+        self.kill_btn.set_sensitive(False)
+        self.kill_btn.connect("clicked", self.on_kill)
+        header.pack_end(self.kill_btn)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.add(vbox)
+
+        # Список процессов: PID, Имя, Пользователь, CPU%, RAM МБ
+        self.store = Gtk.ListStore(int, str, str, float, float)
+        self.treeview = Gtk.TreeView(model=self.store)
+        self.treeview.get_selection().connect("changed", self.on_selection_changed)
+
+        columns = [
+            ("PID", 0, 80),
+            ("Процесс", 1, 260),
+            ("Пользователь", 2, 140),
+            ("CPU %", 3, 90),
+            ("RAM МБ", 4, 100),
+        ]
+        for title, idx, width in columns:
+            renderer = Gtk.CellRendererText()
+            col = Gtk.TreeViewColumn(title, renderer, text=idx)
+            col.set_fixed_width(width)
+            col.set_sort_column_id(idx)
+            self.treeview.append_column(col)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.add(self.treeview)
+        vbox.pack_start(scrolled, True, True, 0)
+
+        self.summary_label = Gtk.Label(label="", xalign=0)
+        self.summary_label.get_style_context().add_class("summary")
+        vbox.pack_start(self.summary_label, False, False, 0)
+
+        self.refresh()
+        GLib.timeout_add_seconds(3, self.auto_refresh)
+
+    def get_selected_pid(self):
+        model, treeiter = self.treeview.get_selection().get_selected()
+        if treeiter is None:
+            return None
+        return model[treeiter][0]
+
+    def on_selection_changed(self, selection):
+        self.kill_btn.set_sensitive(self.get_selected_pid() is not None)
+
+    def on_kill(self, widget):
+        pid = self.get_selected_pid()
+        if pid is None:
+            return
+        try:
+            psutil.Process(pid).terminate()
+        except Exception as e:
+            dialog = Gtk.MessageDialog(
+                transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK, text="Не удалось завершить процесс",
+            )
+            dialog.format_secondary_text(str(e))
+            dialog.run()
+            dialog.destroy()
+        self.refresh()
+
+    def auto_refresh(self):
+        self.refresh()
+        return True
+
+    def refresh(self):
+        self.store.clear()
+        total_cpu = psutil.cpu_percent()
+        mem = psutil.virtual_memory()
+        for p in psutil.process_iter(["pid", "name", "username", "cpu_percent", "memory_info"]):
+            try:
+                info = p.info
+                ram_mb = (info["memory_info"].rss / (1024 * 1024)) if info["memory_info"] else 0
+                self.store.append([
+                    info["pid"],
+                    info["name"] or "—",
+                    info["username"] or "—",
+                    round(info["cpu_percent"] or 0.0, 1),
+                    round(ram_mb, 1),
+                ])
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        self.summary_label.set_text(
+            f"Процессов: {len(self.store)}   |   CPU: {total_cpu:.0f}%   |   "
+            f"RAM: {mem.used // (1024*1024)} / {mem.total // (1024*1024)} МБ"
+        )
+
+
+def main():
+    screen = Gdk.Screen.get_default()
+    provider = Gtk.CssProvider()
+    provider.load_from_data(CSS)
+    Gtk.StyleContext.add_provider_for_screen(
+        screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
+    win = ApOSTaskManager()
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
+
+
+if __name__ == "__main__":
+    main()
