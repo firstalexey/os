@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Диспетчер драйверов ApOS
-Comment=Определить и установить видеодрайверы
-Exec=apos-driver-manager
-Icon=preferences-system
-Categories=System;
-Terminal=false

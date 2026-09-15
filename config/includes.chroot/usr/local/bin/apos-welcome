@@ -1,7 +1,0 @@
-#!/bin/bash
-FLAG="$HOME/.config/apos-welcome-shown"
-if [ ! -f "$FLAG" ]; then
-    mkdir -p "$(dirname "$FLAG")"
-    touch "$FLAG"
-    xdg-open /usr/local/share/apos/welcome.html
-fi
